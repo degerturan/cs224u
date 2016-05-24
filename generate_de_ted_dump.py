@@ -78,7 +78,9 @@ with open(OUTPUT_FN,"w+") as outfile:
                     for j, w in enumerate(words):
                         if (len(w) >= LEN_CUTOFF): # and w[0].isupper(): # sadly no upper case here :(  
                             # Get morphology parse
+                            # HACK! For now, just capitalize th word always. Pretty good chance it's a noun if it's this long!
                             capitalized = w[:1].upper() + w[1:]
+
                             morph_splits = get_morphology_parse(capitalized)
                             if ENABLE_STEMMER:
                                 morph_splits = [stemmer2.stem(s) for s in morph_splits]
