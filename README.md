@@ -16,3 +16,8 @@ https://docs.google.com/document/d/1rdn0hOnJNcOBWEZgipdDfSyjJdnv_sinuAUSDSpiQns/
 Although the code included in NLTK to access GermaNet is open source, the database itself is proprietary to Universität Tübingen. It is free for educational and research purposes, though.
 Need to sign license: http://www.sfs.uni-tuebingen.de/GermaNet/index.shtml
 
+Similar to Penn Treebank in German:
+- https://corpora.uni-hamburg.de/drupal/de/islandora/object/treebank:hdt
+- negra Corpus
+- TIGER Corpus
+- SALSA Corpus
