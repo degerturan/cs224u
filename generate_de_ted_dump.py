@@ -8,15 +8,21 @@ import sys
 from subprocess import Popen, PIPE, STDOUT
 import time
 import pexpect
+from nltk.stem.snowball import SnowballStemmer
 
 NO_RESULT_TAG = "no result"
 OUTPUT_FN = "german_ted.txt"
-LEN_CUTOFF = 8 # only pass words past this number through the morphological parser
+LEN_CUTOFF = 20 #15 #8 # only pass words past this number through the morphological parser
+ENABLE_STEMMER = True
+ENABLE_MORPH_SPLIT = True
 
 # Set up morphology parser as a subprocess
 child = pexpect.spawn('./fst-infl2 zmorge-20150315-smor_newlemma.ca')
 child.expect('reading.*')
 child.expect('finished.*')
+
+# TODO: figure out a way to get this guy to work with umlaut unicode
+stemmer2 = SnowballStemmer("german", ignore_stopwords=True)
 
 def get_morphology_parse(word):
     # Send the word query to the prompt
@@ -33,17 +39,20 @@ def get_morphology_parse(word):
     gotprompt = 0
     while not gotprompt:
         # child.expect("", timeout=None)
-        gotprompt = child.expect([".", pexpect.TIMEOUT], timeout=0.0001)
+        gotprompt = child.expect([".", pexpect.TIMEOUT], timeout=0) #0.0001
 
     # Check for "no result" and just return the word
     if len(parse) == 0 or parse[0:len(NO_RESULT_TAG)] == NO_RESULT_TAG:
         return [word]
 
     # Process parse
-    parse = parse.replace("\n","").replace("<~>","").replace("<->s<","<").replace("<->","").replace("<CAP>","")
+    parse = parse.replace("\n","").replace("<~>","").replace("<->s<","<").replace("<->","")
+    parse = re.sub(r"<.{0,5}>", '', unicode(parse,"utf-8"), flags=re.UNICODE) # remove any dangling <.....> tags
     parse = re.sub(r"<\+.*", '', unicode(parse,"utf-8"), flags=re.UNICODE)
+    # TODO: check this and cill
+    print parse
 
-    # TODO: deal with dangling s-characters
+    # TODO: deal with more dangling s-characters? Remove any gunk under a few characters we get back? Let stemmer and glove take care of that?
     return parse.split("<#>")
 
 # Collect files in the TED corpus
@@ -64,13 +73,22 @@ with open(OUTPUT_FN,"w+") as outfile:
                 # Split the words
                 words = line.split(" ")
 
-                # Edit them
-                for j, w in enumerate(words):
-                    if (len(w) >= LEN_CUTOFF): # and w[0].isupper(): # sadly no upper case here :(  
-                        # Get morphology parse
-                        split_word = " ".join(get_morphology_parse(w))
-                        words[j] = split_word
-                        # print w+" : "+split_word
+                if ENABLE_MORPH_SPLIT:
+                    # Morphological splitting
+                    for j, w in enumerate(words):
+                        if (len(w) >= LEN_CUTOFF): # and w[0].isupper(): # sadly no upper case here :(  
+                            # Get morphology parse
+                            capitalized = w[:1].upper() + w[1:]
+                            morph_splits = get_morphology_parse(capitalized)
+                            if ENABLE_STEMMER:
+                                morph_splits = [stemmer2.stem(s) for s in morph_splits]
+                            split_word = " ".join(morph_splits)
+                            words[j] = split_word
+                            # print w+" : "+split_word
+
+                # Stemming
+                if ENABLE_STEMMER:
+                    words = [stemmer2.stem(s) for s in words]
 
                 # Join them back together, making them all lowercase
                 line = " ".join(words).lower()
@@ -81,3 +99,15 @@ with open(OUTPUT_FN,"w+") as outfile:
         sys.stdout.write("  Processed: %d of %d files.   \r" % (i+1, len(matches)) )
         sys.stdout.flush()
 
+# TODO: pick last rather than first?
+# Materialwissenschaften --> last better than first
+# Eigentumsverhältnissen --> last better than first
+# Infektionskrankheit --> last better than first
+# Truppenstationierung--> ok
+# Produkt ion landschaft --> mistake
+
+# Schlaf über wachungs system
+# Schlafüberwachungssystem  --> last better than first
+
+
+# Wirtschaftswissenschaftler
