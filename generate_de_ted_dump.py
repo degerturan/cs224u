@@ -11,10 +11,10 @@ import pexpect
 from nltk.stem.snowball import SnowballStemmer
 
 NO_RESULT_TAG = "no result"
-OUTPUT_FN = "german_ted.txt"
+OUTPUT_FN = "german_ted_unprocessed.txt"
 LEN_CUTOFF = 20 #15 #8 # only pass words past this number through the morphological parser
-ENABLE_STEMMER = True
-ENABLE_MORPH_SPLIT = True
+ENABLE_STEMMER = False #True
+ENABLE_MORPH_SPLIT = False #True
 
 # Set up morphology parser as a subprocess
 child = pexpect.spawn('./fst-infl2 zmorge-20150315-smor_newlemma.ca')
@@ -48,7 +48,7 @@ def get_morphology_parse(word):
     # Process parse
     parse = parse.replace("\n","").replace("<~>","").replace("<->s<","<").replace("<->","")
     parse = re.sub(r"<.{0,5}>", '', unicode(parse,"utf-8"), flags=re.UNICODE) # remove any dangling <.....> tags
-    parse = re.sub(r"<\+.*", '', unicode(parse,"utf-8"), flags=re.UNICODE)
+    parse = re.sub(r"<\+.*", '', parse)
     # TODO: check this and cill
     print parse
 
@@ -97,9 +97,9 @@ with open(OUTPUT_FN,"w+") as outfile:
 
                 # Write to the giant target file
                 outfile.write(line.encode("utf-8"))
-        # print("Processed: %d of %d files.   \r" % (i+1, len(matches)))
-        sys.stdout.write("  Processed: %d of %d files.   \r" % (i+1, len(matches)) )
-        sys.stdout.flush()
+        print("Processed: %d of %d files.   \r" % (i+1, len(matches)))
+        # sys.stdout.write("  Processed: %d of %d files.   \r" % (i+1, len(matches)) )
+        # sys.stdout.flush()
 
 # TODO: pick last rather than first?
 # Materialwissenschaften --> last better than first
