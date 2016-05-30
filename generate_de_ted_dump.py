@@ -24,6 +24,12 @@ child.expect('finished.*')
 # TODO: figure out a way to get this guy to work with umlaut unicode
 stemmer2 = SnowballStemmer("german", ignore_stopwords=True)
 
+
+# TODO:
+# - run on sherlock/aws
+# - figure out a way to get the last parse rather than a first for a lot of these words
+# - use another corpus with capitalized nouns
+
 def get_morphology_parse(word):
     # Send the word query to the prompt
     child.sendline(word)
