@@ -160,7 +160,7 @@ def evaluate_vectors(W, vocab, ivocab, filename):
         print scores
         print "Accuracy: "+str(scores.mean())+" (+/- "+str(scores.std())+")"
 
-    # evaluate_sentiment()
+    evaluate_sentiment()
 
 if __name__ == "__main__":
     main()
