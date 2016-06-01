@@ -18,3 +18,5 @@ glove/*.txt
 glove/*.bin
 *.pyc
 glove/text8
+
+zmorge-20150315-smor_newlemma.ca
